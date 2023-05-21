@@ -1,0 +1,1 @@
+_gridData.Compute("SUM(PaybackAmount)", string.Empty).ToString();

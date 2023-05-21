@@ -1,0 +1,38 @@
+private void gridData_CellContentClick(object sender, DataGridViewCellEventArgs e)
+{
+	try
+	{
+		if (e.RowIndex >= 0)
+		{
+			string date = gridData.Rows[e.RowIndex].Cells["column_name"].Value.ToString();
+		}
+	}
+	catch (Exception ex)
+	{
+
+		MessageBox.Show(ex.Message);
+	}
+}
+
+--------------------------------------------------------------------------------------------------------
+
+To set datagridview column width
+
+col.AutoSizeMode = DataGridViewAutoSizeColumnMode.NotSet;
+col.Width = 110;
+
+--------------------------------------------------------------------------------------------------------
+
+Row color
+
+gridData.Rows[gridData.Rows.Count - 1].DefaultCellStyle.BackColor = Color.Yellow;
+gridData.Rows[gridData.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.Red;
+
+---------------------------------------------------------------------------------------------------------
+
+Text alignment in cells
+
+gridCol.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+---------------------------------------------------------------------------------------------------------
+

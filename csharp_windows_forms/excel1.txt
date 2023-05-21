@@ -1,0 +1,185 @@
+private void ExcelExport(DataTable cashbook)
+        {
+            try
+            {
+                if (cashbook != null && cashbook.Rows.Count > 0)
+                {
+                    Microsoft.Office.Interop.Excel.ApplicationClass ExcelApp = new Microsoft.Office.Interop.Excel.ApplicationClass();
+                    ExcelFile.Workbook xlWorkbook = ExcelApp.Workbooks.Add(Microsoft.Office.Interop.Excel.XlWBATemplate.xlWBATWorksheet);
+
+                    ExcelFile.Sheets xlSheets = null;
+                    Microsoft.Office.Interop.Excel._Worksheet xlWorksheet = null;
+
+                    xlSheets = ExcelApp.Sheets;
+                    xlWorksheet = (ExcelFile.Worksheet)xlSheets.Add(xlSheets[1], Type.Missing, Type.Missing, Type.Missing);
+
+                    // << -- merging cells to enter topic 
+                    Microsoft.Office.Interop.Excel.Range mergeRange = xlWorksheet.get_Range(xlWorksheet.Cells[1, 1], xlWorksheet.Cells[1, 2]);
+                    mergeRange.Merge(true);
+                    ExcelApp.Cells[1, 1] = "ගෙවීම්  මුදල්  පොත";
+                    // -- >>
+
+                    // << -- topic range and bold it
+                    Microsoft.Office.Interop.Excel.Range topicRange = xlWorksheet.get_Range(xlWorksheet.Cells[1, 1], xlWorksheet.Cells[1, 1]);
+                    topicRange.Font.Bold = true;
+                    // -- >>
+
+                    // << -- set first cell height 
+                    ExcelApp.get_Range(ExcelApp.Cells[1, 1], ExcelApp.Cells[1, 1]).RowHeight = 25;
+                    // -->> setting column headers
+
+                    int headerStrtPostion = 1;
+
+                    #region generating columns for excel
+                    for (; headerStrtPostion < cashbook.Columns.Count; headerStrtPostion++)
+                    {
+
+
+                        string value = null;
+                        value = cashbook.Columns[headerStrtPostion].ColumnName;
+                        switch (value)
+                        {
+                            case "vid":
+                                break;
+                            case "ledger_page":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + "ලෙජර් පිටුව";
+                                break;
+                            case "book_keeper":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + "පොත් තබන්නා";
+                                break;
+                            case "accountant":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + "ගණකාධිකාරී";
+                                break;
+                            case "Date":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (දිනය)";
+                                Microsoft.Office.Interop.Excel.Range r2 = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r2.EntireColumn.NumberFormat = "MM/DD/YYYY";
+                                break;
+                            case "Payee Name":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (ගෙවීම් ලබන්නාගේ නම)";
+                                break;
+                            case "COL3":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (වැඩ සටහන් අංකය)";
+                                break;
+                            case "COL4":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (ව්‍යාපෘති අංකය)";
+                                break;
+                            case "COL5":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (ගිණුම් අංකය)";
+                                break;
+                            case "Voucher No":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (වව්චර් අංකය)";
+                                break;
+                            case "Cheque No":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (චෙක් පත් අංකය)";
+                                Microsoft.Office.Interop.Excel.Range r4 = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r4.EntireColumn.NumberFormat = "@";
+                                break;
+                            case "Amount":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (චෙක් පතේ මුදල)";
+                                Microsoft.Office.Interop.Excel.Range r = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r.EntireColumn.NumberFormat = "#,##0.00";
+                                break;
+                            case "Cross Amount":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (හර සටහන)";
+                                Microsoft.Office.Interop.Excel.Range r1 = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r1.EntireColumn.NumberFormat = "#,##0.00";
+                                break;
+                            default:
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName;
+                                Microsoft.Office.Interop.Excel.Range r3 = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r3.EntireColumn.NumberFormat = "#,##0.00";
+                                break;
+                                break;
+                        }
+
+                    }
+                    #endregion
+
+                    #region generating expenses analysis columns
+                    //DataTable dt_CashBookExpence = cashBCtrl.GetObjectNamesForCashBookExpences();
+
+                    //if (dt_CashBookExpence.Columns.Count > 0)
+                    //{
+                    //    foreach (DataRow rowExpence in dt_CashBookExpence.Rows)
+                    //    {
+                    //        ExcelApp.Cells[4, headerStrtPostion] = rowExpence["object_name"].ToString();
+                    //        headerStrtPostion++;
+                    //    }
+                    //}
+                    #endregion
+
+                    //#region adding additional columns to the sheet
+                    //ExcelApp.Cells[4, headerStrtPostion] = "ලෙජර් පිටුව ";
+                    //headerStrtPostion++;
+
+                    //ExcelApp.Cells[4, headerStrtPostion] = "පොත් තබන්නා ";
+                    //headerStrtPostion++;
+
+                    //ExcelApp.Cells[4, headerStrtPostion] = "ගණකාධිකාරී  ";
+                    //headerStrtPostion++;
+                    //#endregion
+
+                    #region entering content data
+                    int dataStartPostion = 5;
+                    foreach (DataRow row in cashbook.Rows)
+                    {
+                        //ExcelApp.Cells[dataStartPostion, 1] = row["Date"] == null ? "" : row["Date"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 2] = row["Payee Name"] == null ? "" : row["Payee Name"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 3] = row["COL3"] == null ? "" : row["COL3"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 4] = row["COL4"] == null ? "" : row["COL4"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 5] = row["COL5"] == null ? "" : row["COL5"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 6] = row["Voucher No"] == null ? "" : row["Voucher No"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 7] = row["Cheque No"] == null ? "" : row["Cheque No"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 8] = row["Amount"] == null ? "" : row["Amount"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 9] = row["Cross Amount"] == null ? "" : row["Cross Amount"].ToString();
+
+                        //if (cashbook.Columns.Count > 9)
+                        //{
+                            for (int i = 1; i < cashbook.Columns.Count; i++)
+                            {
+                                ExcelApp.Cells[dataStartPostion, i] = row[cashbook.Columns[i].ColumnName] == null ? "" : row[cashbook.Columns[i].ColumnName].ToString();
+                                //Microsoft.Office.Interop.Excel.Range r = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[dataStartPostion, i]);
+                                //r.EntireColumn.NumberFormat = "#,##0.00";
+                            }
+                        //}
+
+                        dataStartPostion++;
+                    }
+                    #endregion
+
+                    #region making header font bold
+                    Microsoft.Office.Interop.Excel.Range headerRange = xlWorksheet.get_Range(xlWorksheet.Cells[4, 1], xlWorksheet.Cells[4, headerStrtPostion - 1]);
+                    headerRange.Font.Bold = true;
+                    headerRange.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Black);
+                    headerRange.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Azure);
+                    ExcelApp.get_Range(ExcelApp.Cells[4, 1], ExcelApp.Cells[4, 9]).Font.Bold = true;
+                    #endregion
+
+                    // whole data content area range
+                    Microsoft.Office.Interop.Excel.Range wholeContentRange = xlWorksheet.get_Range(xlWorksheet.Cells[4, 1], xlWorksheet.Cells[dataStartPostion - 1, headerStrtPostion - 1]);
+
+                    #region making content area border black
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeBottom].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeLeft].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeRight].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeTop].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideHorizontal].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideVertical].Color = Color.Black.ToArgb();
+                    #endregion
+
+                    ExcelApp.Columns.AutoFit();
+
+                    ((ExcelFile.Worksheet)ExcelApp.ActiveWorkbook.Sheets[ExcelApp.ActiveWorkbook.Sheets.Count]).Delete();
+                    ExcelApp.Visible = true;
+
+                    // Release the Excel application from memory, if this not done Excel app will remain in the task manager
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(ExcelApp);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }

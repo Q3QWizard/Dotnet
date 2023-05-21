@@ -1,0 +1,85 @@
+private void CreateDataGridViewColumns()
+{
+	try
+	{
+		DataTable dt_CashBookExpence = cashBCtrl.GetObjectNamesForCashBookExpences();
+
+		DataGridViewTextBoxColumn col_Date = new DataGridViewTextBoxColumn();
+		col_Date.Name = "cDate";
+		col_Date.DataPropertyName = "Date";
+		col_Date.HeaderText = "Date (දිනය)";
+		col_Date.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+		col_Date.DefaultCellStyle.Format = "d";
+
+		DataGridViewTextBoxColumn col_PayeeName = new DataGridViewTextBoxColumn();
+		col_PayeeName.Name = "payeeName";
+		col_PayeeName.DataPropertyName = "Payee Name";
+		col_PayeeName.HeaderText = "Payee Name (ගෙවීම් ලබන්නාගේ නම)";
+
+		DataGridViewTextBoxColumn col_COL3 = new DataGridViewTextBoxColumn();
+		col_COL3.Name = "COl3";
+		col_COL3.DataPropertyName = "COl3";
+		col_COL3.HeaderText = "COL3 (වැඩ සටහන් අංකය)";
+
+		DataGridViewTextBoxColumn col_COL4 = new DataGridViewTextBoxColumn();
+		col_COL4.Name = "COl4";
+		col_COL4.DataPropertyName = "COl4";
+		col_COL4.HeaderText = "COL4 (ව්‍යාපෘති අංකය)";
+
+		DataGridViewTextBoxColumn col_COL5 = new DataGridViewTextBoxColumn();
+		col_COL5.Name = "COl5";
+		col_COL5.DataPropertyName = "COl5";
+		col_COL5.HeaderText = "COL5 (ගිණුම් අංකය)";
+
+		DataGridViewTextBoxColumn col_VoucherNo = new DataGridViewTextBoxColumn();
+		col_VoucherNo.Name = "voucherNo";
+		col_VoucherNo.DataPropertyName = "Voucher No";
+		col_VoucherNo.HeaderText = "Voucher No (වවුචර් අංකය)";
+
+		DataGridViewTextBoxColumn col_ChequeNo = new DataGridViewTextBoxColumn();
+		col_ChequeNo.Name = "chequeNo";
+		col_ChequeNo.DataPropertyName = "Cheque No";
+		col_ChequeNo.HeaderText = "Cheque No (චෙක් පත් අංකය)";
+
+		DataGridViewTextBoxColumn col_Amount = new DataGridViewTextBoxColumn();
+		col_Amount.Name = "amount";
+		col_Amount.DataPropertyName = "Amount";
+		col_Amount.HeaderText = "Amount (චෙක් පතේ මුදල)";
+		col_Amount.DefaultCellStyle.Format = "N2";
+		col_Amount.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+		DataGridViewTextBoxColumn col_CrossAmount = new DataGridViewTextBoxColumn();
+		col_CrossAmount.Name = "CrossAmount";
+		col_CrossAmount.DataPropertyName = "Cross Amount";
+		col_CrossAmount.HeaderText = "Cross Amount (හර සටහන)";
+		col_CrossAmount.DefaultCellStyle.Format = "N2";
+		col_CrossAmount.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+		Dgv_CashBook.Columns.Add(col_Date);
+		Dgv_CashBook.Columns.Add(col_PayeeName);
+		Dgv_CashBook.Columns.Add(col_COL3);
+		Dgv_CashBook.Columns.Add(col_COL4);
+		Dgv_CashBook.Columns.Add(col_COL5);
+		Dgv_CashBook.Columns.Add(col_VoucherNo);
+		Dgv_CashBook.Columns.Add(col_ChequeNo);
+		Dgv_CashBook.Columns.Add(col_Amount);
+		Dgv_CashBook.Columns.Add(col_CrossAmount);
+
+		foreach (DataRow row in dt_CashBookExpence.Rows)
+		{
+			DataGridViewTextBoxColumn dgcol = new DataGridViewTextBoxColumn();
+			dgcol.Name = row["object_name"].ToString();
+			
+			dgcol.DataPropertyName = row["object_name"].ToString();
+			dgcol.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+			dgcol.DefaultCellStyle.Format = "N2";
+			Dgv_CashBook.Columns.Add(dgcol);
+
+		}
+	}
+	catch (Exception ex)
+	{
+
+		MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+	}
+}

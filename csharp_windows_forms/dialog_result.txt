@@ -1,0 +1,6 @@
+DialogResult dialogResult = MessageBox.Show("Setting file was not found, \nDo you want to create a new settings file?", "Alert", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+if (dialogResult == DialogResult.Yes)
+{
+
+   
+}

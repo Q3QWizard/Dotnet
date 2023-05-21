@@ -1,0 +1,24 @@
+private static void CheckIsAdminAndPromtPopup()
+{
+	WindowsPrincipal pricipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+	bool hasAdministrativeRight = pricipal.IsInRole(WindowsBuiltInRole.Administrator);
+	if (!hasAdministrativeRight)
+	{
+		// relaunch the application with admin rights
+		string fileName = Assembly.GetExecutingAssembly().Location;
+		ProcessStartInfo processInfo = new ProcessStartInfo();
+		processInfo.Verb = "runas";
+		processInfo.FileName = fileName;
+
+		try
+		{
+			Process.Start(processInfo);
+		}
+		catch (Win32Exception ex)
+		{
+			// This will be thrown if the user cancels the prompt
+		}
+
+		return;
+	}
+}

@@ -1,0 +1,1 @@
+string [] errMsg = response.Split(new string[] { "key" }, StringSplitOptions.None);

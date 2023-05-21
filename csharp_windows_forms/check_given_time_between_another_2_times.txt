@@ -1,0 +1,15 @@
+private bool IsTimeInBetween(DateTime startDt, DateTime endDt, DateTime matchDt)
+{
+	bool falg = false;
+
+	TimeSpan start = new TimeSpan(startDt.Hour, startDt.Minute, startDt.Second); //10 o'clock
+	TimeSpan end = new TimeSpan(endDt.Hour, endDt.Minute, endDt.Second); //12 o'clock
+	TimeSpan now = matchDt.TimeOfDay;
+
+	if ((now >= start) && (now <= end))
+	{
+		falg = true;
+	}
+
+	return falg;
+}

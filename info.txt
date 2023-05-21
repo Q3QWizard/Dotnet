@@ -1,0 +1,6 @@
+base, this -> only available on instance methods, not available in static method
+
+In instance method can access base class static methods and instance methods.
+
+Instance method can access static methods
+Static method can not access instance methods.

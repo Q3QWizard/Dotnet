@@ -1,0 +1,94 @@
+/*
+ Using Property as IEnumerable doesn’t make it Read-only
+ * 
+ * When an IEnumerable property gets exposed in a created class, callers can modify as follows
+ */
+
+/*using System;
+using System.Collections.Generic;
+using System.Linq;
+class Program
+{
+    public static void Main()
+    {
+        MyClass myClass = new MyClass();
+
+        ((List<string>)myClass.ReadOnlyNameCollection).Add("######From Client#####");
+
+        myClass.Print();
+
+        Console.Read();
+    }
+}
+
+public class MyClass
+{
+    List<string> _nameCollection = new List<string>();
+
+    public MyClass()
+    {
+        _nameCollection.Add("Rob");
+        _nameCollection.Add("John");
+        _nameCollection.Add("Jummy");
+        _nameCollection.Add("Derek");
+    }
+
+    public IEnumerable<string> ReadOnlyNameCollection
+    {
+        get { return _nameCollection.AsEnumerable(); }
+    }
+    public void Print()
+    {
+        foreach (var item in ReadOnlyNameCollection)
+
+            Console.WriteLine(item);
+    }
+}*/
+
+//ABOVE IS THE WRONG WAY
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// BELLOW IS THE CORRECT WAY
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+class Program
+{
+    public static void Main()
+    {
+        MyClass myClass = new MyClass();
+
+        ((List<string>)myClass.ReadOnlyNameCollection).Add("######From Client#####");
+
+        myClass.Print();
+
+        Console.Read();
+    }
+}
+
+public class MyClass
+{
+    List<string> _nameCollection = new List<string>();
+
+    public MyClass()
+    {
+        _nameCollection.Add("Rob");
+        _nameCollection.Add("John");
+        _nameCollection.Add("Jummy");
+        _nameCollection.Add("Derek");
+    }
+
+    public IEnumerable<string> ReadOnlyNameCollection
+    {
+        get { return _nameCollection.AsReadOnly(); }
+    }
+    public void Print()
+    {
+        foreach (var item in ReadOnlyNameCollection)
+
+            Console.WriteLine(item);
+    }
+}

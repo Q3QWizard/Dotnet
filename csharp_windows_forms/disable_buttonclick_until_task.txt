@@ -1,0 +1,26 @@
+private void LongProcessStartControlDisable()
+{
+    btnSearch.Enabled = false;
+    btnSearch.Update();
+    btnExport.Enabled = false;
+    btnExport.Update();
+    btnClear.Enabled = false;
+    btnClear.Update();
+
+    lblWaiting.Visible = true;
+
+}
+
+private void LongProcessEndControlEnable()
+{
+    Application.DoEvents();
+
+    btnSearch.Enabled = true;
+    btnSearch.Update();
+    btnExport.Enabled = true;
+    btnExport.Update();
+    btnClear.Enabled = true;
+    btnClear.Update();
+
+    lblWaiting.Visible = false;
+}

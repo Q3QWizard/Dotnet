@@ -1,0 +1,6 @@
+string s = dtPublishVac.AsEnumerable()
+                                                .Where(y => y.Field<string>("MainCategory") == "dfsds")
+                                                .Sum(x => x.Field<decimal>("Cost"))
+                                                .ToString();
+
+                    //string totalCost = dtPublishVac.Compute("Sum(Cost)", string.Empty).ToString();

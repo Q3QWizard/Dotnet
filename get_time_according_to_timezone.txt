@@ -1,0 +1,27 @@
+private DateTime GetSriLankanDatetime()
+{
+	DateTime serverTime = DateTime.Now; // gives you current Time in server timeZone
+	DateTime utcTime = serverTime.ToUniversalTime(); // convert it to Utc using timezone setting of server computer
+	TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("Sri Lanka Standard Time");
+	DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, tzi);
+
+	return localTime;
+}
+
+-----------------------------------------------------------------------------------------------------------------------
+
+get list of all timezones
+
+using System;
+
+namespace TimeZoneIds
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            foreach (TimeZoneInfo z in TimeZoneInfo.GetSystemTimeZones())
+                Console.WriteLine(z.Id);
+        }
+    }
+}

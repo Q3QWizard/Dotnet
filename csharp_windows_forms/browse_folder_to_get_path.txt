@@ -1,0 +1,25 @@
+private void btn_Browse_Click(object sender, EventArgs e)
+{
+	try
+	{
+
+		FolderBrowserDialog folderDlg = new FolderBrowserDialog();
+		folderDlg.ShowNewFolderButton = true;
+
+		DialogResult result = folderDlg.ShowDialog();
+
+		if (result == DialogResult.OK)
+		{
+
+			txt_SavePath.Text = folderDlg.SelectedPath;
+
+			Environment.SpecialFolder root = folderDlg.RootFolder;
+
+		}
+	}
+	catch (Exception ex)
+	{
+
+		MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+	}
+}

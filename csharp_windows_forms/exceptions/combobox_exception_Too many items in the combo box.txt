@@ -1,0 +1,5 @@
+ComboBox Exception: “Too many items in the combo box”
+
+This poorly-worded exception results when you Add an object to the ComboBox whose ToString() method returns a null or empty string. 
+
+To fix this error, make sure that for every object that you add to the ComboBox, the ToString() method returns a non-empty string.

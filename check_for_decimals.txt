@@ -1,0 +1,8 @@
+private bool CheckForDecimals(string strDecimal)
+{
+    bool isDecimal = false;
+
+    isDecimal = decimal.TryParse(strDecimal);
+
+    return isDecimal;
+}

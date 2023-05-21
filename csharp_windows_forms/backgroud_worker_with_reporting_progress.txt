@@ -1,0 +1,211 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using BaseDetailsClassLibrary.TableToCreate;
+using MySql.Data.MySqlClient;
+using System.Threading;
+
+namespace BaseDetailsClassLibrary
+{
+    public partial class TableCreations : Form
+    {
+        private List<string> _tableList;
+        private string _callingNamespace;
+        private int _yLocation;
+
+        public TableCreations(List<string> tableList, string callingNamespace)
+        {
+            _tableList = tableList;
+            _callingNamespace = callingNamespace;
+            _yLocation = 50; // starting location of the first label contrl in the form
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// Used to disable the close button on the control box
+        /// </summary>
+        private const int CP_NOCLOSE_BUTTON = 0x200;
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams myCp = base.CreateParams;
+                myCp.ClassStyle = myCp.ClassStyle | CP_NOCLOSE_BUTTON;
+                return myCp;
+            }
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void TableCreations_Load(object sender, EventArgs e)
+        {
+            bgwrkProcess.RunWorkerAsync();
+        }
+
+        private void InitExecutingProcess(string tableName, string callingNamespace)
+        {
+            bool flagQuery = false;
+
+            try
+            {
+                #region check if the table already exist in the database
+                if (IsTableAlreadyExist(tableName))
+                {
+                    return;
+                }
+                #endregion
+
+                #region create label
+                Label lblTableName = new Label();
+                lblTableName.Location = new Point(30, _yLocation);
+                lblTableName.Tag = 1;
+                lblTableName.Text = tableName;
+                lblTableName.AutoSize = true;
+                lblTableName.Width = 100;
+                lblTableName.Font = new Font("Arial", 9, FontStyle.Bold);
+                lblTableName.ForeColor = Color.Blue;
+
+                this.Invoke(new MethodInvoker(delegate()
+                {
+                    pnlStatus.Controls.Add(lblTableName);
+                }));
+
+                Label lblTableStatus = new Label();
+                lblTableStatus.Location = new Point(lblTableName.Location.X + lblTableName.Width + 20, _yLocation);
+                lblTableStatus.Tag = 1;
+                lblTableStatus.Text = "Executing...";
+                lblTableStatus.ForeColor = Color.Red;
+                lblTableStatus.AutoSize = true;
+                lblTableStatus.Width = 500;
+                lblTableStatus.Font = new Font("Arial", 9, FontStyle.Bold);
+                this.Invoke(new MethodInvoker(delegate()
+                {
+                    pnlStatus.Controls.Add(lblTableStatus);
+                }));
+
+                _yLocation += 20;
+
+                #endregion
+
+                #region get appropriate sql according to the calling namespace, and update label text, and wait for some time
+                if (callingNamespace == "CustomReportLibrary.Controls")
+                {
+                    KeyValuePair<string, string> tablWithSql = TableCustomeReportLibrary.GetTableWtihSql.FirstOrDefault(s => s.Key == tableName);
+ 
+                    this.Invoke(new MethodInvoker(delegate()
+                    {
+                        lblTableName.Text = tablWithSql.Key;
+                    }));
+                    this.Invoke(new MethodInvoker(delegate()
+                    {
+                        lblTableStatus.Text = "Executing..";
+                    }));
+                    string query = tablWithSql.Value;
+
+                    flagQuery = ExecutingTableCreationQuery(query);
+                }
+
+                for (int i = 1; i <= 100; i++)
+                {
+                    Thread.Sleep(50);
+                    bgwrkProcess.ReportProgress(i);
+                }
+
+                this.Invoke(new MethodInvoker(delegate()
+                {
+                    if (flagQuery)
+                    {
+                        lblTableStatus.Text = "successful";
+                        lblTableStatus.ForeColor = Color.Green;
+                    }
+                    else
+                    {
+                        lblTableStatus.Text = "Error";
+                        lblTableStatus.ForeColor = Color.Red;
+                    }
+                }));
+
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private bool IsTableAlreadyExist(string tableName)
+        {
+            string sql = "SELECT * FROM information_schema.tables where table_schema='"+ Connection_Main_Class.database +"' AND TABLE_NAME = '" + tableName + "';";
+
+            DataSet ds = BaseControlerClass.FillDataSet(sql);
+
+            if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count == 1)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool ExecutingTableCreationQuery(string query)
+        {
+            bool flag = false;
+
+            try
+            {
+                flag = BaseControlerClass.new_insert_update_command(query);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return flag;
+        }
+
+        private void bgwrkProcess_DoWork(object sender, DoWorkEventArgs e)
+        {
+            
+            this.Invoke(new MethodInvoker(delegate()
+            {
+                btnClose.Enabled = false;
+                btnClose.Update();
+                lblFullProcess.Visible = true;
+                lblFullProcess.Update();
+            }));
+
+            /// loop through table list to create
+            foreach (string tableName in _tableList)
+            {
+                InitExecutingProcess(tableName, _callingNamespace);
+            }
+
+            this.Invoke(new MethodInvoker(delegate()
+            {
+                Application.DoEvents();
+                btnClose.Enabled = true;
+            }));
+        }
+
+        private void bgwrkProcess_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            this.Invoke(new MethodInvoker(delegate()
+            {
+                lblFullProcess.Text = "Process finished";
+            }));
+        }
+
+        private void bgwrkProcess_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            pgbarProcess.Value = e.ProgressPercentage;
+        }
+    }
+}

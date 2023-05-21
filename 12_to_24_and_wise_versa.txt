@@ -1,0 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            DateTime dd = DateTime.Now;
+            Console.WriteLine(dd.ToString("hh:mm tt")); // hh for 12 hours and HH is for 24 hours
+
+            Console.Read();
+        }
+    }
+}

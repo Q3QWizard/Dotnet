@@ -1,0 +1,37 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Selection_Sort
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            Tuple<int, string, string> sd = GetEmployee();
+
+            if (sd !=null)
+            {
+                
+            }
+
+            Console.Read();
+        }
+
+        public static Tuple<int, string, string> GetEmployee()
+        {
+            int employeeId = 1001;
+
+            string firstName = "Rudy";
+
+            string lastName = "Koertson";
+
+            //Create a tuple and return
+
+            return Tuple.Create(employeeId, firstName, lastName);
+        }
+    }
+
+}

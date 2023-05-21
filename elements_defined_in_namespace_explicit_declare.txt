@@ -1,0 +1,36 @@
+Elements defined in a namespace cannot be explicitly declared as private, protected, or protected internal
+
+
+Elements defined in a namespace may be explicitly declared public or internal.
+
+They may not be explicitly declared private or protected (or protected internal) because these modifiers only make sense for members of a class.
+
+Your protected class GetDataBL, for example, makes no sense, because "protected" means "accessible to classes that inherit from the containing class" -- but there is no containing class for GetDataBL.
+
+namespace ISeeOptic.BL
+{
+
+  public abstract class Process
+  {        
+     ...      
+
+     protected static void DeleteImages(List<ImagesPath> list)
+      {
+          some logic
+      } 
+
+      ...
+   }
+
+
+    protected class GetDataBL: Process
+    {
+      ...
+
+     public static void DeleteImages(List<ImagesPath> list)
+     {
+         DeleteImages(list); 
+     } 
+     ...
+ }
+} 

@@ -1,0 +1,2 @@
+The decimal suffix is M/m since D/d was already taken by double. Although it has been suggested that M stands for money, 
+Peter Golde recalls that M was chosen simply as the next best letter in decimal.

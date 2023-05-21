@@ -1,0 +1,1 @@
+Array.Resize(ref byteChars, byteChars.Length - 1);

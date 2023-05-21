@@ -1,0 +1,905 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using ProductClass.Controls;
+using ExcelFile = Microsoft.Office.Interop.Excel;
+
+namespace PradeshiyaSaba.Forms.CashBook
+{
+    public partial class CashBookPaying : Form
+    {
+        private VoucherControler voucherCtrl;
+        private DataTable dtCashBook = null;
+        private DataTable dtCashBookForExcel = null; // used another dt other than dtCashBook when changing column names back to sinhala grid also changed to avoid that used another dt
+        private CashBookController cashBCtrl;
+        private DataTable dy_col;
+        DataTable dtExpenceLedger;
+
+        public CashBookPaying()
+        {
+            voucherCtrl = new VoucherControler();
+
+            InitializeComponent();
+            SetControlColors();
+            //Dgv_CashBook.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            cashBCtrl = new CashBookController();
+            //Dgv_CashBook.AutoGenerateColumns = true;
+        }
+
+        private void SetControlColors()
+        {
+            Program.styleClass.FormNormalButtonGreen(Btn_Search);
+            Program.styleClass.FormNormalButtonGreen(btnShowRows);
+            Program.styleClass.FormNormalButtonOrange(Btn_ExportExcel);
+            Program.styleClass.setGridDetails(Dgv_CashBook);
+            //Program.styleClass.setGridDetails(dataGridView1);
+            Program.styleClass.headerText(label3);
+            Program.styleClass.headerText(label4);
+        }
+
+        private void Btn_ExportExcel_Click(object sender, EventArgs e)
+        {
+            Lbl_Excel_Wait.Visible = true;
+            Lbl_Excel_Wait.Refresh();
+            DisableAllFormControls();
+            //Dgv_CashBook.Enabled = false;
+            ExcelExport(dtCashBookForExcel);
+            //Dgv_CashBook.Enabled = true;
+            EnableAllFormControls();
+            Lbl_Excel_Wait.Visible = false;
+            Lbl_Excel_Wait.Refresh();
+        }
+
+        private void EnableAllFormControls()
+        {
+            try
+            {
+                foreach (Control ctrl in this.Controls)
+                {
+                    ctrl.Enabled = true;
+                    ctrl.Refresh();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void DisableAllFormControls()
+        {
+            try
+            {
+                foreach (Control ctrl in this.Controls)
+                {
+                    if (ctrl.Name == "Lbl_wait" || ctrl.Name == "Lbl_Excel_Wait")
+                    {
+                        continue;
+                    }
+
+                    ctrl.Enabled = false;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void ExcelExport(DataTable cashbook)
+        {
+            try
+            {
+                if (cashbook != null && cashbook.Rows.Count > 0)
+                {
+                    Microsoft.Office.Interop.Excel.ApplicationClass ExcelApp = new Microsoft.Office.Interop.Excel.ApplicationClass();
+                    ExcelFile.Workbook xlWorkbook = ExcelApp.Workbooks.Add(Microsoft.Office.Interop.Excel.XlWBATemplate.xlWBATWorksheet);
+
+                    ExcelFile.Sheets xlSheets = null;
+                    Microsoft.Office.Interop.Excel._Worksheet xlWorksheet = null;
+
+                    xlSheets = ExcelApp.Sheets;
+                    xlWorksheet = (ExcelFile.Worksheet)xlSheets.Add(xlSheets[1], Type.Missing, Type.Missing, Type.Missing);
+
+                    // << -- merging cells to enter topic 
+                    Microsoft.Office.Interop.Excel.Range mergeRange = xlWorksheet.get_Range(xlWorksheet.Cells[1, 1], xlWorksheet.Cells[1, 2]);
+                    mergeRange.Merge(true);
+                    ExcelApp.Cells[1, 1] = "ගෙවීම්  මුදල්  පොත";
+                    // -- >>
+
+                    // << -- topic range and bold it
+                    Microsoft.Office.Interop.Excel.Range topicRange = xlWorksheet.get_Range(xlWorksheet.Cells[1, 1], xlWorksheet.Cells[1, 1]);
+                    topicRange.Font.Bold = true;
+                    // -- >>
+
+                    // << -- set first cell height 
+                    ExcelApp.get_Range(ExcelApp.Cells[1, 1], ExcelApp.Cells[1, 1]).RowHeight = 25;
+                    // -->> setting column headers
+
+                    int headerStrtPostion = 1;
+
+                    #region generating columns for excel
+                    for (; headerStrtPostion < cashbook.Columns.Count; headerStrtPostion++)
+                    {
+
+
+                        string value = null;
+                        value = cashbook.Columns[headerStrtPostion].ColumnName;
+                        switch (value)
+                        {
+                            case "vid":
+                                break;
+                            case "ledger_page":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + "ලෙජර් පිටුව";
+                                break;
+                            case "book_keeper":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + "පොත් තබන්නා";
+                                break;
+                            case "accountant":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + "ගණකාධිකාරී";
+                                break;
+                            case "Date":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (දිනය)";
+                                Microsoft.Office.Interop.Excel.Range r2 = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r2.EntireColumn.NumberFormat = "MM/DD/YYYY";
+                                break;
+                            case "Payee Name":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (ගෙවීම් ලබන්නාගේ නම)";
+                                break;
+                            case "COL3":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (වැඩ සටහන් අංකය)";
+                                break;
+                            case "COL4":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (ව්‍යාපෘති අංකය)";
+                                break;
+                            case "COL5":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (ගිණුම් අංකය)";
+                                break;
+                            case "Voucher No":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (වව්චර් අංකය)";
+                                break;
+                            case "Cheque No":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (චෙක් පත් අංකය)";
+                                Microsoft.Office.Interop.Excel.Range r4 = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r4.EntireColumn.NumberFormat = "@";
+                                break;
+                            case "Amount":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (චෙක් පතේ මුදල)";
+                                Microsoft.Office.Interop.Excel.Range r = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r.EntireColumn.NumberFormat = "#,##0.00";
+                                break;
+                            case "Cross Amount":
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName + " (හර සටහන)";
+                                Microsoft.Office.Interop.Excel.Range r1 = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r1.EntireColumn.NumberFormat = "#,##0.00";
+                                break;
+                            default:
+                                ExcelApp.Cells[4, headerStrtPostion] = " " + cashbook.Columns[headerStrtPostion].ColumnName;
+                                Microsoft.Office.Interop.Excel.Range r3 = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[4, headerStrtPostion]);
+                                r3.EntireColumn.NumberFormat = "#,##0.00";
+                                break;
+                                break;
+                        }
+
+                    }
+                    #endregion
+
+                    #region generating expenses analysis columns
+                    //DataTable dt_CashBookExpence = cashBCtrl.GetObjectNamesForCashBookExpences();
+
+                    //if (dt_CashBookExpence.Columns.Count > 0)
+                    //{
+                    //    foreach (DataRow rowExpence in dt_CashBookExpence.Rows)
+                    //    {
+                    //        ExcelApp.Cells[4, headerStrtPostion] = rowExpence["object_name"].ToString();
+                    //        headerStrtPostion++;
+                    //    }
+                    //}
+                    #endregion
+
+                    //#region adding additional columns to the sheet
+                    //ExcelApp.Cells[4, headerStrtPostion] = "ලෙජර් පිටුව ";
+                    //headerStrtPostion++;
+
+                    //ExcelApp.Cells[4, headerStrtPostion] = "පොත් තබන්නා ";
+                    //headerStrtPostion++;
+
+                    //ExcelApp.Cells[4, headerStrtPostion] = "ගණකාධිකාරී  ";
+                    //headerStrtPostion++;
+                    //#endregion
+
+                    #region entering content data
+                    int dataStartPostion = 5;
+                    foreach (DataRow row in cashbook.Rows)
+                    {
+                        //ExcelApp.Cells[dataStartPostion, 1] = row["Date"] == null ? "" : row["Date"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 2] = row["Payee Name"] == null ? "" : row["Payee Name"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 3] = row["COL3"] == null ? "" : row["COL3"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 4] = row["COL4"] == null ? "" : row["COL4"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 5] = row["COL5"] == null ? "" : row["COL5"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 6] = row["Voucher No"] == null ? "" : row["Voucher No"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 7] = row["Cheque No"] == null ? "" : row["Cheque No"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 8] = row["Amount"] == null ? "" : row["Amount"].ToString();
+                        //ExcelApp.Cells[dataStartPostion, 9] = row["Cross Amount"] == null ? "" : row["Cross Amount"].ToString();
+
+                        //if (cashbook.Columns.Count > 9)
+                        //{
+                            for (int i = 1; i < cashbook.Columns.Count; i++)
+                            {
+                                ExcelApp.Cells[dataStartPostion, i] = row[cashbook.Columns[i].ColumnName] == null ? "" : row[cashbook.Columns[i].ColumnName].ToString();
+                                //Microsoft.Office.Interop.Excel.Range r = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[dataStartPostion, i]);
+                                //r.EntireColumn.NumberFormat = "#,##0.00";
+                            }
+                        //}
+
+                        dataStartPostion++;
+                    }
+                    #endregion
+
+                    #region making header font bold
+                    Microsoft.Office.Interop.Excel.Range headerRange = xlWorksheet.get_Range(xlWorksheet.Cells[4, 1], xlWorksheet.Cells[4, headerStrtPostion - 1]);
+                    headerRange.Font.Bold = true;
+                    headerRange.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Black);
+                    headerRange.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Azure);
+                    ExcelApp.get_Range(ExcelApp.Cells[4, 1], ExcelApp.Cells[4, 9]).Font.Bold = true;
+                    #endregion
+
+                    // whole data content area range
+                    Microsoft.Office.Interop.Excel.Range wholeContentRange = xlWorksheet.get_Range(xlWorksheet.Cells[4, 1], xlWorksheet.Cells[dataStartPostion - 1, headerStrtPostion - 1]);
+
+                    #region making content area border black
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeBottom].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeLeft].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeRight].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeTop].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideHorizontal].Color = Color.Black.ToArgb();
+                    wholeContentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideVertical].Color = Color.Black.ToArgb();
+                    #endregion
+
+                    ExcelApp.Columns.AutoFit();
+
+                    ((ExcelFile.Worksheet)ExcelApp.ActiveWorkbook.Sheets[ExcelApp.ActiveWorkbook.Sheets.Count]).Delete();
+                    ExcelApp.Visible = true;
+
+                    // Release the Excel application from memory, if this not done Excel app will remain in the task manager
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(ExcelApp);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void Btn_Search_Click(object sender, EventArgs e)
+        {
+            panel5.Visible = false;
+            cmbVoucherCheque.Text = "";
+            this.searchCashBook();
+
+        }
+
+        private void searchCashBook()
+        {
+            try
+            {
+                
+                //Dgv_CashBook.Columns.Clear();
+                //CreateDataGridViewColumns();
+                //CreateFixColumnsToBack();
+                dtCashBook = voucherCtrl.GetPaymentCashBook(DateTime.Parse(Dtp_From.Text), DateTime.Parse(Dtp_To.Text).AddDays(1));
+                //Dgv_CashBook.DataSource = dtCashBook;
+                //CreateDataSetFixColumnsToBack(dtCashBook);
+                ModifyDataSetAsRequired(dtCashBook);
+                Dgv_CashBook.DataSource = dtCashBook;
+                //Dgv_CashBook.AutoGenerateColumns = false;
+                //this.Dgv_CashBook.Columns["Date"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+        }
+        
+        private void ModifyDataSetAsRequired(DataTable dt)
+        {
+            DataTable newCashBook = null;
+
+            try
+            {
+                //newCashBook = new DataTable();
+
+                newCashBook = dt;//voucherCtrl.GetPaymentCashBook(DateTime.Parse(Dtp_From.Text), DateTime.Parse(Dtp_To.Text));
+
+                dy_col = cashBCtrl.GetObjectNamesForCashBookExpences();
+                dtExpenceLedger = cashBCtrl.GetExpenceLedgerAll();
+
+                List<int> alreadyProcessed = new List<int>();
+
+                foreach (DataRow row in dy_col.Rows)
+                {
+                    DataColumn dc = new DataColumn();
+                    //dc.ColumnName = row["object_name"].ToString();
+                    dc.ColumnName = row["id_no"].ToString();
+                    dc.DataType = typeof(decimal);
+                    newCashBook.Columns.Add(dc);
+                }
+
+                newCashBook.Columns.Add("ledger_page", typeof(string));
+                newCashBook.Columns.Add("book_keeper", typeof(string));
+                newCashBook.Columns.Add("accountant", typeof(string));
+
+
+                
+                foreach (DataRow dr in newCashBook.Rows)
+                {
+                    //int chequeCount = cashBCtrl.GetNumberOfChequesForVoucherForTimeRange(int.Parse(dr["vid"].ToString()), DateTime.Parse(Dtp_From.Text), DateTime.Parse(Dtp_To.Text));
+
+                    DataTable dt_vouchers = cashBCtrl.GetVouchersBy_VNO(dr["vid"].ToString());
+
+                    if (alreadyProcessed.Contains(int.Parse(dr["vid"].ToString())))
+                    {
+                        continue;
+                    }
+
+                    alreadyProcessed.Add(int.Parse(dr["vid"].ToString()));
+
+                    DataTable dtt_voucher = cashBCtrl.GetVouchersBy_VNO(dr["vid"].ToString());
+
+                    //ref edit
+                    //DataTable dt_voucher_details = cashBCtrl.GetVoucherDetailsBy_VID(int.Parse(dtt_voucher.Rows[0]["id"].ToString()));
+                    DataTable dt_voucher_details = cashBCtrl.GetVoucherDetailsBy_VID(int.Parse(dr["vid"].ToString()));
+
+                    decimal v_details_amount = 0;
+
+                    foreach (DataRow dr_v_d in dt_voucher_details.Rows)
+                    {
+
+                        v_details_amount = decimal.Parse(dr_v_d["amount"].ToString());
+                        int ledger_id = int.Parse(dr_v_d["ledgerId"].ToString());
+
+                         //int exp_ledg_cat_id = int.Parse(cashBCtrl.GetExpenceLedgerBy_LID(ledger_id).Rows[0]["cash_book_payment_cat"].ToString());
+                        int exp_ledg_cat_id = GetExpenceLedgerBy_LID(ledger_id);
+
+                        // string exp_col_name = cashBCtrl.GetExpenceAnalizeSettingsBy_EAID(exp_ledg_cat_id).Rows[0]["id_no"].ToString();
+                        //string exp_col_name = GetExpenceAnalizeSettingsBy_EAID(exp_ledg_cat_id);
+
+                        if (dr[exp_ledg_cat_id.ToString()] != null && dr[exp_ledg_cat_id.ToString()].ToString() != "")
+                        {
+                            v_details_amount += decimal.Parse(dr[exp_ledg_cat_id.ToString()].ToString());
+                            dr[exp_ledg_cat_id.ToString()] = v_details_amount;
+                        }
+                        else
+                        {
+                            dr[exp_ledg_cat_id.ToString()] = v_details_amount;
+                        }
+                    }
+                }
+
+                DataTable dtCrossAmt = this.cashBCtrl.GetCrossEntryDetails(DateTime.Parse(Dtp_From.Text), DateTime.Parse(Dtp_To.Text).AddDays(1));
+                if (dtCrossAmt.Rows.Count > 0)
+                {
+                    foreach (DataRow r in dtCrossAmt.Rows)
+                    {
+                        int voucherID = int.Parse(r["VoucherID"].ToString());
+                        decimal crossAmt = decimal.Parse(r["CrossAmount"].ToString());
+
+                        foreach (DataRow dr in newCashBook.Rows) // search whole table
+                        {
+                            if (int.Parse(dr["vid"].ToString()) == voucherID) // if id==2
+                            {
+                                dr["Cross Amount"] = crossAmt;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                DataRow rw = newCashBook.NewRow();
+                if (newCashBook != null && newCashBook.Rows.Count > 0)
+                {                   
+                    int colIndex = 0;
+                    foreach (DataColumn col in newCashBook.Columns)
+                    {
+                        
+                        decimal colRunningTot = 0;
+
+                        if (col.DataType == typeof(Decimal))
+                        {
+                            foreach (DataRow dr in newCashBook.Rows)
+                            {
+                                //int rowIndex = 0;
+
+                                if (dr[colIndex] != null && dr[colIndex].ToString() != "")
+                                {
+                                    colRunningTot = colRunningTot + decimal.Parse(dr[colIndex].ToString());
+                                }
+
+                                //rowIndex++;
+                            }
+                        }
+                        else
+                        {
+                            colIndex++;
+                            continue;
+                        }
+                        rw[col.ColumnName] = colRunningTot;
+                        colIndex++;
+                    }
+
+                    newCashBook.Rows.Add(rw);
+
+                }
+
+                rw["Payee Name"] = "Total";
+
+                //newCashBook.Rows.Add(rw);
+                Dgv_CashBook.DataSource = null;
+
+               
+
+                Dgv_CashBook.DataSource = newCashBook;
+                Dgv_CashBook.Columns[0].Visible = false;
+                //Dgv_CashBook.AutoGenerateColumns = false;
+
+                Dgv_CashBook.Columns[0].Visible = false;
+                dtCashBookForExcel = dtCashBook.Copy();
+
+
+                for (int i = Dgv_CashBook.Columns.Count-1; i >=0 ; i--)
+                {
+                    if (Dgv_CashBook.Columns.Count-1 == i)
+                    {
+                        Dgv_CashBook.Columns[i].HeaderText = "ගණකාධිකාරී";
+                        continue;
+                    }
+                    else if (Dgv_CashBook.Columns.Count-2 == i)
+                    {
+                        Dgv_CashBook.Columns[i].HeaderText = "පොත් තබන්නා";
+                        continue;
+                    }
+                    else if (Dgv_CashBook.Columns.Count - 3 == i)
+                    {
+                        Dgv_CashBook.Columns[i].HeaderText = "ලෙජර් පිටුව";
+                        continue;
+                    }
+
+                    string column_name = GetExpenceSettingColNameForId(Dgv_CashBook.Columns[i].HeaderText.ToString());
+
+                    if (column_name != "-")
+                    {
+                        Dgv_CashBook.Columns[i].HeaderText = column_name;
+                    }
+                }
+
+                for (int i = dtCashBookForExcel.Columns.Count - 1; i >= 0; i--)
+                {
+                    if (dtCashBookForExcel.Columns.Count - 1 == i)
+                    {
+                        dtCashBookForExcel.Columns[i].ColumnName = "ගණකාධිකාරී";
+                        continue;
+                    }
+                    else if (dtCashBookForExcel.Columns.Count - 2 == i)
+                    {
+                        dtCashBookForExcel.Columns[i].ColumnName = "පොත් තබන්නා";
+                        continue;
+                    }
+                    else if (dtCashBookForExcel.Columns.Count - 3 == i)
+                    {
+                        dtCashBookForExcel.Columns[i].ColumnName = "ලෙජර් පිටුව";
+                        continue;
+                    }
+
+                    string column_name = GetExpenceSettingColNameForId(dtCashBookForExcel.Columns[i].ColumnName.ToString());
+
+                    if (column_name != "-")
+                    {
+                        dtCashBookForExcel.Columns[i].ColumnName = column_name;
+                    }
+                }
+
+
+                //Dgv_CashBook.Columns[18].HeaderText = "ලෙජර් පිටුව";
+                //Dgv_CashBook.Columns[19].HeaderText = "පොත් තබන්නා";
+                //Dgv_CashBook.Columns[20].HeaderText = "ගණකාධිකාරී";
+
+                //newCashBook.Columns["ledger_page"].ColumnName = "ලෙජර් පිටුව";
+                //newCashBook.Columns["book_keeper"].ColumnName = "පොත් තබන්නා";
+                //newCashBook.Columns["accountant"].ColumnName = "ගණකාධිකාරී";
+                
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private int GetExpenceLedgerBy_LID(int id)
+        { 
+            try
+            {
+                if (dtExpenceLedger != null && dtExpenceLedger.Rows.Count > 0)
+                {
+                    foreach (DataRow row in dtExpenceLedger.Rows)
+                    {
+                        if (int.Parse(row["id"].ToString()) == id)
+                        {
+                            return int.Parse(row["cash_book_payment_cat"].ToString());
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            return -1;
+        }
+
+        private string GetExpenceAnalizeSettingsBy_EAID(int id)
+        { 
+            try
+            {
+                foreach (DataRow row in dy_col.Rows)
+                {
+                    if (int.Parse(row["id_no"].ToString()) == id)
+                    {
+                        return row["id_no"].ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            return "-";
+        }
+
+
+        private string GetExpenceSettingColNameForId(string id)
+        { 
+            try
+            {
+                if (dy_col != null && dy_col.Rows.Count > 0)
+                {
+                    foreach (DataRow dy_row in dy_col.Rows)
+                    {
+                        if (dy_row["id_no"].ToString() == id)
+                        {
+                            return dy_row["object_name"].ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            return "-";
+        }
+
+        //string GetUnicodeString(string s)
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    foreach (char c in s)
+        //    {
+        //        sb.Append("\\u");
+        //        sb.Append(String.Format("{0:x4}", (int)c));
+        //    }
+        //    return sb.ToString();
+        //}
+
+        private void CreateDataSetFixColumnsToBack(DataTable dt)
+        {
+            try
+            {
+                DataColumn dc1 = new DataColumn();
+                dc1.ColumnName = "ledger_page";
+                dc1.DataType = typeof(string);
+                dt.Columns.Add(dc1);
+
+                DataColumn dc2 = new DataColumn();
+                dc2.ColumnName = "book_keeper";
+                dc2.DataType = typeof(string);
+                dt.Columns.Add(dc2);
+
+                DataColumn dc3 = new DataColumn();
+                dc3.ColumnName = "accountant";
+                dc3.DataType = typeof(string);
+                dt.Columns.Add(dc3);
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void Btn_Minimize_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        private void CashBookPaying_Load(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Maximized;
+            panel5.Visible = false;
+            cmbVoucherCheque.DropDownStyle = ComboBoxStyle.DropDownList;
+        }
+
+        //private void CreateDataGridViewColumns()
+        //{
+        //    try
+        //    {
+        //        DataTable dt_CashBookExpence = cashBCtrl.GetObjectNamesForCashBookExpences();
+
+        //        DataGridViewTextBoxColumn col_Date = new DataGridViewTextBoxColumn();
+        //        col_Date.Name = "cDate";
+        //        col_Date.DataPropertyName = "Date";
+        //        col_Date.HeaderText = "Date (දිනය)";
+        //        col_Date.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+        //        col_Date.DefaultCellStyle.Format = "d";
+
+        //        DataGridViewTextBoxColumn col_PayeeName = new DataGridViewTextBoxColumn();
+        //        col_PayeeName.Name = "payeeName";
+        //        col_PayeeName.DataPropertyName = "Payee Name";
+        //        col_PayeeName.HeaderText = "Payee Name (ගෙවීම් ලබන්නාගේ නම)";
+        //        col_PayeeName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+        //        DataGridViewTextBoxColumn col_COL3 = new DataGridViewTextBoxColumn();
+        //        col_COL3.Name = "COl3";
+        //        col_COL3.DataPropertyName = "COl3";
+        //        col_COL3.HeaderText = "COL3 (වැඩ සටහන් අංකය)";
+        //        col_COL3.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+        //        DataGridViewTextBoxColumn col_COL4 = new DataGridViewTextBoxColumn();
+        //        col_COL4.Name = "COl4";
+        //        col_COL4.DataPropertyName = "COl4";
+        //        col_COL4.HeaderText = "COL4 (ව්‍යාපෘති අංකය)";
+        //        col_COL4.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+        //        DataGridViewTextBoxColumn col_COL5 = new DataGridViewTextBoxColumn();
+        //        col_COL5.Name = "COl5";
+        //        col_COL5.DataPropertyName = "COl5";
+        //        col_COL5.HeaderText = "COL5 (ගිණුම් අංකය)";
+        //        col_COL5.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+        //        DataGridViewTextBoxColumn col_VoucherNo = new DataGridViewTextBoxColumn();
+        //        col_VoucherNo.Name = "voucherNo";
+        //        col_VoucherNo.DataPropertyName = "Voucher No";
+        //        col_VoucherNo.HeaderText = "Voucher No (වවුචර් අංකය)";
+        //        col_VoucherNo.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+        //        DataGridViewTextBoxColumn col_ChequeNo = new DataGridViewTextBoxColumn();
+        //        col_ChequeNo.Name = "chequeNo";
+        //        col_ChequeNo.DataPropertyName = "Cheque No";
+        //        col_ChequeNo.HeaderText = "Cheque No (චෙක් පත් අංකය)";
+        //        col_ChequeNo.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+        //        DataGridViewTextBoxColumn col_Amount = new DataGridViewTextBoxColumn();
+        //        col_Amount.Name = "amount";
+        //        col_Amount.DataPropertyName = "Amount";
+        //        col_Amount.HeaderText = "Amount (චෙක් පතේ මුදල)";
+        //        col_Amount.DefaultCellStyle.Format = "N2";
+        //        col_Amount.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+        //        DataGridViewTextBoxColumn col_CrossAmount = new DataGridViewTextBoxColumn();
+        //        col_CrossAmount.Name = "CrossAmount";
+        //        col_CrossAmount.DataPropertyName = "Cross Amount";
+        //        col_CrossAmount.HeaderText = "Cross Amount (හර සටහන)";
+        //        col_CrossAmount.DefaultCellStyle.Format = "N2";
+        //        col_CrossAmount.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+        //        Dgv_CashBook.Columns.Add(col_Date);
+        //        Dgv_CashBook.Columns.Add(col_PayeeName);
+        //        Dgv_CashBook.Columns.Add(col_COL3);
+        //        Dgv_CashBook.Columns.Add(col_COL4);
+        //        Dgv_CashBook.Columns.Add(col_COL5);
+        //        Dgv_CashBook.Columns.Add(col_VoucherNo);
+        //        Dgv_CashBook.Columns.Add(col_ChequeNo);
+        //        Dgv_CashBook.Columns.Add(col_Amount);
+        //        Dgv_CashBook.Columns.Add(col_CrossAmount);
+
+        //        //foreach (DataRow row in dt_CashBookExpence.Rows)
+        //        //{
+        //        //    DataGridViewTextBoxColumn dgcol = new DataGridViewTextBoxColumn();
+        //        //    dgcol.Name = row["object_name"].ToString();
+                    
+        //        //    dgcol.DataPropertyName = row["object_name"].ToString();
+        //        //    dgcol.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+        //        //    dgcol.DefaultCellStyle.Format = "N2";
+        //        //    Dgv_CashBook.Columns.Add(dgcol);
+
+        //        //}
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    }
+        //}
+
+        private void CreateDataSetForBind(DataTable dt)
+        {
+            try
+            {
+                DataTable dt_CashBookExpence = cashBCtrl.GetObjectNamesForCashBookExpences();
+
+                foreach (DataRow row in dt_CashBookExpence.Rows)
+                {
+                    DataColumn dc = new DataColumn();
+                    dc.ColumnName = row["object_name"].ToString();
+                    dc.DataType = typeof(decimal);
+                    dt.Columns.Add(dc);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void CreateFixColumnsToBack()
+        {
+            try
+            {
+                DataGridViewTextBoxColumn dgcol1 = new DataGridViewTextBoxColumn();
+                dgcol1.Name = "ledger_page"; ;
+                dgcol1.DataPropertyName = "ledger_page";
+                dgcol1.HeaderText = "ලෙජර් පිටුව";
+
+                DataGridViewTextBoxColumn dgcol2 = new DataGridViewTextBoxColumn();
+                dgcol2.Name = "book_keeper"; ;
+                dgcol2.DataPropertyName = "book_keeper";
+                dgcol2.HeaderText = "පොත් තබන්නා";
+
+                DataGridViewTextBoxColumn dgcol3 = new DataGridViewTextBoxColumn();
+                dgcol3.Name = "accountant"; ;
+                dgcol3.DataPropertyName = "accountant";
+                dgcol3.HeaderText = "ගණකාධිකාරී";
+
+                Dgv_CashBook.Columns.Add(dgcol1);
+                Dgv_CashBook.Columns.Add(dgcol2);
+                Dgv_CashBook.Columns.Add(dgcol3);
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnShowRows_Click(object sender, EventArgs e)
+        {
+            if (txtVoucherCheque.Text=="" || txtVoucherCheque.Text==null)
+            {
+                 MessageBox.Show("Please enter the voucher no or cheque no");
+            }
+
+            else
+            {
+                this.searchCashBook();
+                Dgv_CashBook.Rows[0].Cells[0].Selected = false;
+                bool isHave = false;
+
+                if (cmbVoucherCheque.Text == "Voucher")
+                {
+                    int x = 0;
+                    //bool isHave = false;
+                    foreach (DataGridViewRow vr in Dgv_CashBook.Rows)
+                    {
+                        x++;
+                        string VoucherNo = vr.Cells["VoucherNo"].Value.ToString();
+
+                        if (txtVoucherCheque.Text.Trim() == VoucherNo)
+                        {
+                            isHave = true;
+
+                        }
+                    }
+
+                }
+
+                else if (cmbVoucherCheque.Text == "Cheque")
+                {
+                    //bool isHave = false;
+                    int chequeNo = 0;
+                    foreach (DataGridViewRow dr in Dgv_CashBook.Rows)
+                    {
+                        chequeNo++;
+                        string ChequeNo = dr.Cells["ChequeNo"].Value.ToString();
+
+                        if (txtVoucherCheque.Text.Trim() == ChequeNo)
+                        {
+                            isHave = true;
+                        }
+
+                    }
+                }
+                if (isHave)
+                {
+                    Dgv_CashBook.DataSource = dtCashBook;
+                    this.ChangeGridRowColor();
+
+                }
+                else
+                {
+                    MessageBox.Show("No records were found .....");
+                }
+            }
+        }
+
+        private void ChangeGridRowColor()
+        {
+            if (cmbVoucherCheque.Text == "Cheque")
+            {
+                int chequeNo = 0;
+                foreach (DataGridViewRow dr in Dgv_CashBook.Rows)
+                {
+                    chequeNo++;
+                    string ChequeNo = dr.Cells["ChequeNo"].Value.ToString();
+
+                    if (txtVoucherCheque.Text.Trim() == ChequeNo)
+                    {
+                        dr.DefaultCellStyle.BackColor = Color.CadetBlue;
+                    }
+                }
+            }
+            else if (cmbVoucherCheque.Text == "Voucher")
+            {
+                int x = 0;
+                foreach (DataGridViewRow vr in Dgv_CashBook.Rows)
+                {
+                    x++;
+                    string VoucherNo = vr.Cells["VoucherNo"].Value.ToString();
+
+                    if (txtVoucherCheque.Text.Trim() == VoucherNo)
+                    {
+                        vr.DefaultCellStyle.BackColor = Color.CadetBlue;
+                    }
+                }
+            }
+        }
+    
+
+        private void cmbVoucherCheque_Click(object sender, EventArgs e)
+        {
+            panel5.Visible = true;
+
+        }
+
+        
+    }
+}

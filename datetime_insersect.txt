@@ -1,0 +1,12 @@
+private bool Intersects(DateRange target, DateTime Start, DateTime End)
+{
+	return (((Start <= target.Start) && (End >= target.Start)) ||
+		((Start <= target.End) && (End >= target.End)) ||
+		((Start >= target.Start) && (End <= target.End)));
+}
+
+public class DateRange
+{
+	public DateTime Start { get; set; }
+	public DateTime End { get; set; }
+}

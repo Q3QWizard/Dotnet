@@ -1,0 +1,276 @@
+private void btnExport_Click(object sender, EventArgs e)
+        {
+            DataTable dtRptSource = grdData.DataSource as DataTable;
+
+            
+            if (dtRptSource == null)
+            {
+                MessageControlClass.ShowWarning("No records to show report");
+                return;
+            }
+
+            bool isValidationDataSrc = dtRptSource.Columns["Validate"] != null ? true : false;
+
+
+            LongProcessStartControlDisable();
+
+            DataTable dt = grdData.DataSource as DataTable;
+
+            try
+            {
+                Microsoft.Office.Interop.Excel.ApplicationClass ExcelApp = new Microsoft.Office.Interop.Excel.ApplicationClass();
+                ExcelFile.Workbook xlWorkbook = ExcelApp.Workbooks.Add(Microsoft.Office.Interop.Excel.XlWBATemplate.xlWBATWorksheet);
+
+                ExcelFile.Sheets xlSheets = null;
+                Microsoft.Office.Interop.Excel._Worksheet xlWorksheet = null;
+
+                xlSheets = ExcelApp.Sheets;
+                xlWorksheet = (ExcelFile.Worksheet)xlSheets.Add(xlSheets[1], Type.Missing, Type.Missing, Type.Missing);
+
+                int runRow = 1;
+
+                #region report header
+                Microsoft.Office.Interop.Excel.Range mergeRange = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, 3]);
+                mergeRange.Merge(true);
+                mergeRange.Font.Bold = true;
+                ExcelApp.Cells[1, 1] = lblHeader.Text;
+                xlWorksheet.get_Range(xlWorksheet.Cells[1, 1], xlWorksheet.Cells[1, 1]).Font.Size = 15;
+                
+                runRow++;
+                runRow++;
+                #endregion
+
+                #region search criteria
+                xlWorksheet.Cells[runRow, 1] = "Year";
+                xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, 1]).Font.Bold = true;
+                xlWorksheet.Cells[runRow, 2] = drpYear.Text;
+                xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 2], xlWorksheet.Cells[runRow, 2]).NumberFormat = "@";
+                runRow++;
+
+                if (this._regIncomeTypeInfo.RentalCalType == "MONTH" && drpMonth.SelectedIndex != 0)
+                {
+                    xlWorksheet.Cells[runRow, 1] = "Month";
+                    xlWorksheet.Cells[runRow, 2] = drpMonth.Text;
+                    xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, 1]).Font.Bold = true;
+                    xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 2], xlWorksheet.Cells[runRow, 2]).NumberFormat = "@";
+                    runRow++;
+                }
+                else if (this._regIncomeTypeInfo.RentalCalType == "QUARTER" && drpQuarter.SelectedIndex != 0)
+                {
+                    xlWorksheet.Cells[runRow, 1] = "Quarter";
+                    xlWorksheet.Cells[runRow, 2] = drpQuarter.Text;
+                    xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, 1]).Font.Bold = true;
+                    xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 2], xlWorksheet.Cells[runRow, 2]).NumberFormat = "@";
+                    runRow++;
+                }
+
+                if (drpDivision.SelectedIndex != -1 && drpDivision.SelectedIndex != 0)
+                {
+                    xlWorksheet.Cells[runRow, 1] = "Division";
+                    xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, 1]).Font.Bold = true;
+                    xlWorksheet.Cells[runRow, 2] = drpDivision.Text;
+                    runRow++;
+                }
+
+                if (drpCategory.SelectedIndex != -1 && drpCategory.SelectedIndex != 0)
+                {
+                    xlWorksheet.Cells[runRow, 1] = "Category";
+                    xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, 1]).Font.Bold = true;
+                    xlWorksheet.Cells[runRow, 2] = drpCategory.Text;
+                    runRow++;
+                }
+                #endregion
+
+                runRow++;
+
+                int headerStarting = runRow;
+
+                #region column headers, column width, column datatype
+
+                int headerCol = 1;
+
+                foreach (DataColumn col in this._dtSearchResult.Columns)
+                {
+                    if (col.ColumnName == "ID")
+                    {
+                        continue;
+                    }
+
+                    if (col.ColumnName == "RefNO")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "RefNo";
+                        Microsoft.Office.Interop.Excel.Range colRefNo = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, 1]);
+                        colRefNo.EntireColumn.ColumnWidth = 15;
+                        colRefNo.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "Name")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Name";
+                        Microsoft.Office.Interop.Excel.Range colName = ((Microsoft.Office.Interop.Excel.Range)xlWorksheet.Cells[runRow, 2]);
+                        colName.EntireColumn.ColumnWidth = 40;
+                        //colName.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "Address")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Address";
+                        Microsoft.Office.Interop.Excel.Range colAddress = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 3], xlWorksheet.Cells[runRow, 3]);
+                        colAddress.EntireColumn.ColumnWidth = 25;
+                        colAddress.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "BalanceFoward")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Balance Forward";
+                        Microsoft.Office.Interop.Excel.Range colBalanceFoward = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 4], xlWorksheet.Cells[runRow, 4]);
+                        colBalanceFoward.EntireColumn.NumberFormat = "#,##0.00";
+                        colBalanceFoward.EntireColumn.ColumnWidth = 12;
+                        colBalanceFoward.EntireColumn.WrapText = true; 
+                    }
+                    else if (col.ColumnName == "Warrent")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Warrent";
+                        Microsoft.Office.Interop.Excel.Range colWarrent = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 5], xlWorksheet.Cells[runRow, 5]);
+                        colWarrent.EntireColumn.NumberFormat = "#,##0.00";
+                        colWarrent.EntireColumn.ColumnWidth = 12;
+                        colWarrent.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "Current")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Current Amount";
+                        Microsoft.Office.Interop.Excel.Range colCurrent = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 6], xlWorksheet.Cells[runRow, 6]);
+                        colCurrent.EntireColumn.NumberFormat = "#,##0.00";
+                        colCurrent.EntireColumn.ColumnWidth = 12;
+                        colCurrent.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "Debit")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Debit";
+                        Microsoft.Office.Interop.Excel.Range colDebit = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 7], xlWorksheet.Cells[runRow, 7]);
+                        colDebit.EntireColumn.ColumnWidth = 12;
+                        colDebit.EntireColumn.NumberFormat = "#,##0.00";
+                        colDebit.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "Total")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Total";
+                        Microsoft.Office.Interop.Excel.Range colTotal = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 8], xlWorksheet.Cells[runRow, 8]);
+                        colTotal.EntireColumn.NumberFormat = "#,##0.00";
+                        colTotal.EntireColumn.ColumnWidth = 12;
+                        colTotal.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "Income")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Income";
+                        Microsoft.Office.Interop.Excel.Range colIncome = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 9], xlWorksheet.Cells[runRow, 9]);
+                        colIncome.EntireColumn.NumberFormat = "#,##0.00";
+                        colIncome.EntireColumn.ColumnWidth = 12;
+                        colIncome.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "Credit")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Credit";
+                        Microsoft.Office.Interop.Excel.Range colCredit = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 10], xlWorksheet.Cells[runRow, 10]);
+                        colCredit.EntireColumn.NumberFormat = "#,##0.00";
+                        colCredit.EntireColumn.ColumnWidth = 12;
+                        colCredit.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "BalanceForward")
+                    {
+                        xlWorksheet.Cells[runRow, headerCol] = "Balance Forward";
+                        Microsoft.Office.Interop.Excel.Range colBalanceForward = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 11], xlWorksheet.Cells[runRow, 11]);
+                        colBalanceForward.EntireColumn.NumberFormat = "#,##0.00";
+                        colBalanceForward.EntireColumn.ColumnWidth = 12;
+                        colBalanceForward.EntireColumn.WrapText = true;
+                    }
+                    else if (col.ColumnName == "Validate")
+                    {
+                        if (this._isValidate)
+                        {
+                            xlWorksheet.Cells[runRow, headerCol] = "Next Month Amt";
+                            Microsoft.Office.Interop.Excel.Range colValidate = xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 12], xlWorksheet.Cells[runRow, 12]);
+                            colValidate.EntireColumn.NumberFormat = "#,##0.00";
+                            colValidate.EntireColumn.ColumnWidth = 12;
+                            colValidate.EntireColumn.WrapText = true;
+                        }
+                        else
+                        {
+                            headerCol--;
+                        }
+                        
+                    }
+
+                    headerCol++;
+
+                }
+
+                xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, headerCol - 1]).Font.Bold = true;
+                xlWorksheet.get_Range(xlWorksheet.Cells[runRow, 1], xlWorksheet.Cells[runRow, headerCol - 1]).Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Azure);
+
+                #endregion
+
+                runRow++;
+
+                #region excel cell content
+                if (dtRptSource != null)
+                {
+                    int i = 0;
+                    foreach (DataRow rr in dtRptSource.Rows)
+                    {
+                        xlWorksheet.Cells[runRow, 1] = rr["RefNo"].ToString();
+                        xlWorksheet.Cells[runRow, 2] = rr["Name"].ToString();
+                        xlWorksheet.Cells[runRow, 3] = rr["Address"].ToString();
+                        xlWorksheet.Cells[runRow, 4] = rr["BalanceFoward"].ToString();
+                        xlWorksheet.Cells[runRow, 5] = rr["Warrent"].ToString();
+                        xlWorksheet.Cells[runRow, 6] = rr["Current"].ToString();
+                        xlWorksheet.Cells[runRow, 7] = rr["Debit"].ToString();
+                        xlWorksheet.Cells[runRow, 8] = rr["Total"].ToString();
+                        xlWorksheet.Cells[runRow, 9] = rr["Income"].ToString();
+                        xlWorksheet.Cells[runRow, 10] = rr["Credit"].ToString();
+                        xlWorksheet.Cells[runRow, 11] = rr["BalanceForward"].ToString();
+
+                        if (this._isValidate)
+                        {
+                            xlWorksheet.Cells[runRow, 12] = rr["Validate"].ToString();
+                        }
+                        i++;
+                        runRow++;
+                    }
+                }
+                #endregion
+
+                #region table lines
+                Microsoft.Office.Interop.Excel.Range contentRange = xlWorksheet.get_Range(xlWorksheet.Cells[headerStarting, 1], xlWorksheet.Cells[runRow-1, headerCol - 1]);
+                contentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeBottom].Color = Color.Black.ToArgb();
+                contentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeLeft].Color = Color.Black.ToArgb();
+                contentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeRight].Color = Color.Black.ToArgb();
+                contentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeTop].Color = Color.Black.ToArgb();
+                contentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideHorizontal].Color = Color.Black.ToArgb();
+                contentRange.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideVertical].Color = Color.Black.ToArgb();
+                #endregion
+
+                #region last row total
+                Microsoft.Office.Interop.Excel.Range totalRowRange = xlWorksheet.get_Range(xlWorksheet.Cells[runRow - 1, 1], xlWorksheet.Cells[runRow - 1, headerCol - 1]);
+                totalRowRange.Font.Bold = true;
+                totalRowRange.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Yellow);
+                totalRowRange.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red); 
+                #endregion
+
+
+                //ExcelApp.Columns.AutoFit();
+
+                ((ExcelFile.Worksheet)ExcelApp.ActiveWorkbook.Sheets[ExcelApp.ActiveWorkbook.Sheets.Count]).Delete();
+                ExcelApp.Visible = true;
+
+                // Release the Excel application from memory, if this not done Excel app will remain in the task manager
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(ExcelApp);
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageControlClass.ShowError(ex.Message);
+            }
+            finally
+            {
+                LongProcessEndControlEnable();
+            }  
+        }

@@ -1,0 +1,99 @@
+private void CreateReportWithValues(bool isPrint)
+{
+	try
+	{
+		rirpt = new RegularIncomeRPT();
+
+		string objecName = regCtrl.GetObjectNameFor_RegInc_Id(reg_in_type_id);
+		string newObjectName = this.ToSentenceCase(objecName).Replace(' ', '_');
+		List<BillMargingInfo> listBillInfo = new BillPrintingControler(Connection_Main.conString, Connection_Main.userName, Connection_Main.password, Connection_Main.database).GetObjectDataFor_Regular_Income(newObjectName);
+
+		//string ff = listBillInfo.Find(v => v.Value_Name == "Address").Value_Name;
+
+		this.SetParameterAlign(rirpt, "Address1", listBillInfo.Find(v => v.Value_Name == "Address"));
+		this.SetParameterAlign(rirpt, "Amount1", listBillInfo.Find(x => x.Value_Name == "Address"));
+		this.SetParameterAlign(rirpt, "Category1", listBillInfo.Find(x => x.Value_Name == "Address"));
+		this.SetParameterAlign(rirpt, "Division1", listBillInfo.Find(x => x.Value_Name == "Address"));
+		this.SetParameterAlign(rirpt, "Name1", listBillInfo.Find(x => x.Value_Name == "Name"));
+		this.SetParameterAlign(rirpt, "NBT1", listBillInfo.Find(x => x.Value_Name == "NBT"));
+		this.SetParameterAlign(rirpt, "Printby1", listBillInfo.Find(x => x.Value_Name == "Print by"));
+		this.SetParameterAlign(rirpt, "PrintDate1", listBillInfo.Find(x => x.Value_Name == "Print Date"));
+		this.SetParameterAlign(rirpt, "RefNo1", listBillInfo.Find(x => x.Value_Name == "Ref No"));
+		this.SetParameterAlign(rirpt, "Stamp1", listBillInfo.Find(x => x.Value_Name == "Stamp"));
+		this.SetParameterAlign(rirpt, "Total1", listBillInfo.Find(x => x.Value_Name == "Total"));
+		this.SetParameterAlign(rirpt, "VAT1", listBillInfo.Find(x => x.Value_Name == "VAT"));
+		this.SetParameterAlign(rirpt, "Year1", listBillInfo.Find(x => x.Value_Name == "Year"));
+
+		CrystalDecisions.Windows.Forms.CrystalReportViewer viewReport = new CrystalDecisions.Windows.Forms.CrystalReportViewer();
+		viewReport.ReportSource = rirpt;
+		this.SetPrintPage(rirpt);
+	}
+	catch (Exception ex)
+	{
+
+		throw;
+	}
+}
+
+private void SetParameterAlign(RegularIncomeRPT c, string paraName, BillMargingInfo billMargingInfo)
+{
+	CrystalDecisions.CrystalReports.Engine.ReportObject reportObject1 = c.ReportDefinition.ReportObjects[paraName];
+	FieldObject f = (FieldObject)reportObject1;
+	f.Left = billMargingInfo.Left_Margin;
+	f.Top = billMargingInfo.Top_Margin;
+	f.Height = billMargingInfo.Hight;
+
+	if (billMargingInfo.FontStyle == "Regular")
+		f.ApplyFont(new Font("Arial", billMargingInfo.FontSize, FontStyle.Regular));
+	else if (billMargingInfo.FontStyle == "Bold")
+		f.ApplyFont(new Font("Arial", billMargingInfo.FontSize, FontStyle.Bold));
+	else if (billMargingInfo.FontStyle == "Italic")
+		f.ApplyFont(new Font("Arial", billMargingInfo.FontSize, FontStyle.Italic));
+
+
+	if (billMargingInfo.Align == "Left")
+		f.ObjectFormat.HorizontalAlignment = CrystalDecisions.Shared.Alignment.LeftAlign;
+	else if (billMargingInfo.Align == "Right")
+		f.ObjectFormat.HorizontalAlignment = CrystalDecisions.Shared.Alignment.RightAlign;
+	else if (billMargingInfo.Align == "Center")
+		f.ObjectFormat.HorizontalAlignment = CrystalDecisions.Shared.Alignment.HorizontalCenterAlign;
+	else if (billMargingInfo.Align == "Justified")
+		f.ObjectFormat.HorizontalAlignment = CrystalDecisions.Shared.Alignment.Justified;
+
+	if (billMargingInfo.Need_To_Print == 0)
+		f.Width = 0;
+	else
+		f.Width = billMargingInfo.Width;
+
+	ReportObject reportObject = c.ReportDefinition.ReportObjects["lbl" + paraName];
+	TextObject textObject = (TextObject)reportObject;
+	textObject.Left = billMargingInfo.Lbl_Left_Margin;
+	textObject.Top = billMargingInfo.Lbl_Top_Margin;
+
+	textObject.Height = billMargingInfo.Hight;
+	if (billMargingInfo.Need_To_Print == 0)
+	{
+		textObject.Width = 0;
+	}
+	else
+	{
+		textObject.Width = billMargingInfo.Lbl_Width;
+	}
+	textObject.Text = billMargingInfo.Lable_Name;
+	if (billMargingInfo.FontStyle == "Regular")
+		textObject.ApplyFont(new Font("Arial", billMargingInfo.FontSize, FontStyle.Regular));
+	else if (billMargingInfo.FontStyle == "Bold")
+		textObject.ApplyFont(new Font("Arial", billMargingInfo.FontSize, FontStyle.Bold));
+	else if (billMargingInfo.FontStyle == "Italic")
+		textObject.ApplyFont(new Font("Arial", billMargingInfo.FontSize, FontStyle.Italic));
+
+	if (billMargingInfo.Align == "Left")
+		textObject.ObjectFormat.HorizontalAlignment = CrystalDecisions.Shared.Alignment.LeftAlign;
+	else if (billMargingInfo.Align == "Right")
+		textObject.ObjectFormat.HorizontalAlignment = CrystalDecisions.Shared.Alignment.RightAlign;
+	else if (billMargingInfo.Align == "Center")
+		textObject.ObjectFormat.HorizontalAlignment = CrystalDecisions.Shared.Alignment.HorizontalCenterAlign;
+	else if (billMargingInfo.Align == "Justified")
+		textObject.ObjectFormat.HorizontalAlignment = CrystalDecisions.Shared.Alignment.Justified;
+
+}

@@ -1,0 +1,12 @@
+try
+{
+	if (!File.Exists(this.pathFileName))
+	{
+		File.Create(this.pathFileName).Dispose();
+	}
+}
+catch (Exception ex)
+{
+
+	err.ErrorLogWrite(ex);
+}

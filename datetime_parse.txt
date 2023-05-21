@@ -1,0 +1,82 @@
+Convert.ToDateTime(String)
+
+This method will converts the specified string representation of a date and time to an equivalent date and time value
+C#
+
+string iDate = "05/05/2005";
+DateTime oDate = Convert.ToDateTime(iDate);
+MessageBox.Show(oDate.Day + " " + oDate.Month + "  " + oDate.Year );
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+DateTime.Parse()
+How to Convert a String to a DateTime in C# , VB.Net
+
+DateTime.Parse method supports many formats. It is very forgiving in terms of syntax and will parse dates in many different formats. That means, this method can parse only strings consisting exactly of a date/time presentation, it cannot look for date/time among text.
+C#
+
+string iDate = "2005-05-05";
+DateTime oDate = DateTime.Parse(iDate);
+MessageBox.Show(oDate.Day + " " + oDate.Month + "  " + oDate.Year);
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+DateTime.ParseExact()
+DateTime.ParseExact() in C# , VB.Net
+
+ParseExact method will allow you to specify the exact format of your date string to use for parsing. It is good to use this if your string is always in the same format. The format of the string representation must match the specified format exactly.
+C#
+
+string iString = "2005-05-05 22:12 PM";
+DateTime oDate = DateTime.ParseExact(iString, "yyyy-MM-dd HH:mm tt",null);
+MessageBox.Show(oDate.ToString());
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+CultureInfo
+string to datetime CultureInfo in C# , VB.Net
+
+When numbers, dates and times are formatted into strings or parsed from strings then a culture (CultureInfo)is used to determine how it is done. If you know what specific culture that your dates and decimal or currency values will be in ahead of time, you can use that specific CultureInfo property, e.g. CultureInfo("en-US").
+
+The CultureInfo.InvariantCulture property is neither a neutral nor a specific culture. It is a third type of culture that is culture-insensitive. It is associated with the English language but not with a country or region.
+C#
+
+string iString = "2005-05-05 22:12 PM";
+DateTime oDate = DateTime.ParseExact(iString, "yyyy-MM-dd HH:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+MessageBox.Show(oDate.ToString());
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+DateTime.TryParse method
+
+DateTime.TryParse converts the specified string representation of a date and time to its DateTime equivalent using the specified culture-specific format information and formatting style, and returns a value that indicates whether the conversion succeeded.
+
+public static bool TryParse(
+	string s,
+	out DateTime result
+)
+
+This method is similar to the DateTime.Parse(String) method, except that the TryParse(String, DateTime) method does not throw an exception if the conversion fails. Also, this method tries to ignore unrecognized data, if possible, and fills in missing month, day, and year information with the current date. The TryParse method is culture dependent so be very careful if you decide use it.
+
+using System;
+using System.Windows.Forms;
+using System.Globalization;
+namespace WindowsFormsApplication4
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string inString = "05/01/2009 06:32:00";
+            DateTime dateValue;
+            if (DateTime.TryParse(inString, out dateValue))
+                Console.WriteLine("Converted '{0}' to {1}.", inString, dateValue);
+            else
+                Console.WriteLine("Unable to convert '{0}' to a date.", inString);
+        }
+    }
+}

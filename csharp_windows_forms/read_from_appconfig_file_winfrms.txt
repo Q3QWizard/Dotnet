@@ -1,0 +1,17 @@
+private string ReadAppConfigForFile()
+{ 
+	string filePathWithName = "";
+
+	try
+	{
+		System.Configuration.AppSettingsReader settingsReader = new AppSettingsReader();
+		@filePathWithName = (string)settingsReader.GetValue("FilePathWithFileName", typeof(String));
+	}
+	catch (Exception ex)
+	{
+		
+		MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+	}
+
+	return filePathWithName;
+}

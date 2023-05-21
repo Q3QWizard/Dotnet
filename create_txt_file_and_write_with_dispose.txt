@@ -1,0 +1,44 @@
+private void btn_Save_Click(object sender, EventArgs e)
+{
+	try
+	{
+		if (CheckForValidations())
+		{
+			string pathFileName = Application.StartupPath + "\\" + fileName;
+
+			if (File.Exists(pathFileName))
+			{
+				if (CheckForAlreadyExistDbNames(txt_DbName.Text))
+				{
+					MessageBox.Show("Database name already exist!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					txt_DbName.Focus();
+					txt_DbName.SelectAll();
+					return;
+				}
+
+				DataWrite();
+
+				ClearInputControls();
+
+				MessageBox.Show("Settings saved!", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+			else
+			{
+				DialogResult dialogResult = MessageBox.Show("Setting file was not found, \ndo you want to create a new settings file", "Alert", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+				if (dialogResult == DialogResult.Yes)
+				{
+					File.Create(pathFileName).Dispose();
+					DataWrite();
+					MessageBox.Show("Settings saved!", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				}
+
+				
+			}
+		}
+	}
+	catch (Exception ex)
+	{
+		
+		MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+	}
+}

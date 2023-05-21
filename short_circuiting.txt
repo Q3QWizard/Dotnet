@@ -1,0 +1,21 @@
+Both && and || is "short-circuiting" operators, which means that if the answer is known from the left operand, the right operand is not evaluated.
+
+This means that:
+
+a && b
+b will not be evaluated if a is false, since the final answer is already known.
+
+Likewise:
+
+a || b
+b will not be evaluated if a is true, since the final answer is already known.
+
+If you want both operands to be evaluated, use the & and | operators instead.
+
+The bonus of this is that you can write expressions that would fail if all operands was evaluated. Here's a typical if-statement:
+
+if (a != null && a.SomeProperty != null && a.SomeProperty.Inner != null)
+    ... use a.SomeProperty.Inner
+If a was null, and the expression would go on to evaluate a.SomeProperty, it would throw a NullReferenceException, but since && short-circuits, if a is null, the expression will not evaluate the rest and thus not throw the exception.
+
+Obviously, if you replace && with &, it will throw that exception if either a or a.SomeProperty is null.

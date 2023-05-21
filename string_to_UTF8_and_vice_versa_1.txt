@@ -1,0 +1,18 @@
+using System;
+using System.Text;
+
+class Program
+{
+    public static void Main()
+    {
+        //To encode a string to UTF8 encoding
+        string source = "hello world";
+        byte[] UTF8encodes = UTF8Encoding.UTF8.GetBytes(source);
+        Console.WriteLine(UTF8encodes);
+
+        //get the string from UTF8 encoding
+        string plainText = UTF8Encoding.UTF8.GetString(UTF8encodes);
+        Console.WriteLine(plainText);
+        Console.Read();
+    }
+}

@@ -1,0 +1,33 @@
+public void setGridDetails(DataGridView grid)
+{
+      DataGridViewCellStyle styleDefault = new DataGridViewCellStyle();
+      styleDefault.BackColor = System.Drawing.SystemColors.Window;
+      styleDefault.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      styleDefault.ForeColor = System.Drawing.Color.Black;
+      styleDefault.SelectionBackColor = System.Drawing.Color.LightSkyBlue;
+      styleDefault.SelectionForeColor = System.Drawing.Color.Red;
+      styleDefault.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+      grid.DefaultCellStyle = styleDefault;
+
+      DataGridViewCellStyle styleAlternative = new DataGridViewCellStyle();
+      styleAlternative.BackColor = System.Drawing.SystemColors.MenuBar;
+      styleAlternative.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      styleAlternative.ForeColor = System.Drawing.Color.Black;
+      styleAlternative.SelectionBackColor = System.Drawing.Color.LightSkyBlue;
+      styleAlternative.SelectionForeColor = System.Drawing.Color.Red;
+      styleAlternative.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+      grid.AlternatingRowsDefaultCellStyle = styleAlternative;
+
+      grid.EnableHeadersVisualStyles = false;
+      DataGridViewCellStyle styleHeaders = new DataGridViewCellStyle();
+      styleHeaders.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+      styleHeaders.BackColor = System.Drawing.Color.NavajoWhite;
+      styleHeaders.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      styleHeaders.ForeColor = System.Drawing.Color.Black;
+      styleHeaders.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+      styleHeaders.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+      styleHeaders.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+      grid.ColumnHeadersDefaultCellStyle = styleHeaders;
+
+
+}

@@ -1,0 +1,9 @@
+var tt = voucherTable.AsEnumerable().Where(r => decimal.Parse(r["amount"].ToString()) != decimal.Parse(r["fullAmount"].ToString())).Select(k => new { idno = k["amount"], fullAmount = k["fullAmount"] });
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool hasPaidVoucher = voucherTable.AsEnumerable().Where(r => decimal.Parse(r["amount"].ToString()) != decimal.Parse(r["fullAmount"].ToString())).Count() > 0;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+IEnumerable<DataRow> tt = voucherTable.AsEnumerable().Where(r => decimal.Parse(r["amount"].ToString()) != decimal.Parse(r["fullAmount"].ToString()));

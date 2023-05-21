@@ -1,0 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using CsharpSndBox;
+
+namespace MyConsole
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            // Integer array of 3 values.
+            int[] array1 = new int[3];
+            array1[0] = 4;
+            array1[1] = 5;
+            array1[2] = 6;
+
+            // Use ConvertAll to convert integer array to string array.
+            string[] array2 = Array.ConvertAll(array1, element => element.ToString());
+
+            // Write string array.
+            Console.WriteLine(string.Join(",", array2));
+
+            Console.Read();
+        }
+        
+    }
+}

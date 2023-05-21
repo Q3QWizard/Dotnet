@@ -1,0 +1,19 @@
+ try
+            {
+                DataTable autoCompleteCode = voucherCtrl.GetAllVoucherPayeeNames();
+                txtName.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                txtName.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                AutoCompleteStringCollection coll = new AutoCompleteStringCollection();
+                string[] arrString = autoCompleteCode.AsEnumerable().Select(row => row.Field<string>("payeeName")).ToArray();
+
+                coll.AddRange(arrString);
+                txtName.AutoCompleteCustomSource = coll;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+			
+			
+// if there are null values in the datasource then application will crash, null has to be validated before binding to the textbox

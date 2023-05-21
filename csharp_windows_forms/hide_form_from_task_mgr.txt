@@ -1,0 +1,13 @@
+private void btn_Minimize_Click(object sender, EventArgs e)
+{
+	try
+	{
+		this.WindowState = FormWindowState.Minimized;
+		this.ShowInTaskbar = false;
+	}
+	catch (Exception ex)
+	{
+		
+		MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+	}
+}

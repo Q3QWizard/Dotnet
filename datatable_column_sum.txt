@@ -1,0 +1,39 @@
+private Dictionary<string, decimal> DataTableColumnTotals(DataTable dtTotal, List<string> skipColumns)
+        {
+            Dictionary<string, decimal> dyColSum = new Dictionary<string, decimal>();
+
+            try
+            {
+                foreach (DataRow r in dtTotal.Rows)
+                {
+                    foreach (DataColumn col in dtTotal.Columns)
+                    {
+                        if (skipColumns.Contains(col.ColumnName))
+                        {
+                            continue;
+                        }
+                        string columnSum = r[col.ColumnName].ToString();
+
+                        if (r[col.ColumnName].ToString() != ""
+                        {
+                            if (dyColSum.ContainsKey(col.ColumnName))
+                            {
+                                string columnSumSecond = r[col.ColumnName].ToString();
+                                dyColSum[col.ColumnName] = dyColSum[col.ColumnName] + decimal.Parse(r[col.ColumnName].ToString());
+                            }
+                            else
+                            {
+                                string columnSumSecond = r[col.ColumnName].ToString();
+                                dyColSum.Add(col.ColumnName, decimal.Parse(r[col.ColumnName].ToString()));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+            return dyColSum;
+        }

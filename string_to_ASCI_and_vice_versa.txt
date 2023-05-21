@@ -1,0 +1,14 @@
+using System;
+using System.Text;
+
+class Program
+{
+    public static void Main()
+    {
+        string testString = "Hello World !!";
+        //Here converting the string to byteArray
+        byte[] byteArray = Encoding.ASCII.GetBytes(testString);
+        //Here converting the byteArray to string
+        string str = Encoding.ASCII.GetString(byteArray, 0, byteArray.Length);
+    }
+}

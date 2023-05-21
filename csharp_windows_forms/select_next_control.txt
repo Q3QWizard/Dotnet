@@ -1,0 +1,10 @@
+private void KeyDown(object sender, KeyEventArgs  e)
+{
+
+    if (e.KeyValue == (char)Keys.Enter)
+    {
+        Control ctrl = (Control)sender;
+        this.SelectNextControl(ctrl, true, true, true, true);
+    }
+    
+}

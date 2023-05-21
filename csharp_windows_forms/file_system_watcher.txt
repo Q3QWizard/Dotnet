@@ -1,0 +1,10 @@
+private void watch()
+{
+
+	//string path = @"C:\Users\Nekfa\Desktop";
+	//watcher.Path = path;
+	//watcher.NotifyFilter = NotifyFilters.LastWrite;
+	//watcher.Filter = "*.zip*";
+	//watcher.Changed += new FileSystemEventHandler(OnChanged);
+	//watcher.EnableRaisingEvents = true;
+}
